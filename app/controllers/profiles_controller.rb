@@ -2,6 +2,15 @@ class ProfilesController < ApplicationController
   before_action :require_login
   before_action :load_profile, only: [:show]
 
+ def index
+   if current_user.is_admin?
+     @profiles = Profile.all
+   else
+     @profiles = Profile.public_profiles
+   end
+
+ end
+
  def show
   return render 'errors/403', status: 403 unless is_current_user_authorized_to_view_profile?
 

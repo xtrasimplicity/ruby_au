@@ -77,4 +77,49 @@ describe ProfilesController do
       end
     end
   end
+
+  describe 'on GET to /profiles/index' do
+    context 'when signed in' do
+      context 'as an administrator' do
+        before do
+          sign_in_as_administrator
+          get :index
+        end
+
+        it 'returns all profiles, regardless of public status' do
+          expect(assigns(:profiles).length).to equal(Profile.all.length)
+        end
+      end
+
+      context 'as a user' do
+        before do
+          sign_in
+          get :index
+        end
+
+        it 'returns only profiles with a public status' do
+          public_profiles = Profile.public_profiles
+          private_profiles = Profile.private_profiles
+
+          returned_profiles = assigns(:profiles)
+
+          expect(returned_profiles.length).to equal(public_profiles.length)
+
+          private_profiles.each do |profile|
+            expect(returned_profiles).not_to include(profile)
+          end
+        end
+      end
+    end
+    context 'when not signed in' do
+      before do
+        sign_out
+        get :index
+      end
+
+      it 'redirects to the login page' do
+        expect(response).to redirect_to sign_in_path
+      end
+    end
+  end
 end
