@@ -1,4 +1,5 @@
 require 'rails_helper'
+require 'support/shared_examples/profiles_controller'
 
 describe ProfilesController do
   render_views
@@ -11,47 +12,54 @@ describe ProfilesController do
       context 'when the user is attempting to view their own page' do
         before { get :show, params: { user_id: @current_user.id } }
 
-        it 'responds with success and renders the show template' do
-          expect(response).to be_success
-          expect(response).to render_template 'show'
-        end
-
-        it 'shows the correct user\'s data' do
-         expect(assigns(:profile)).to eq(@current_user.profile)
-         expect(assigns(:profile)).to be_valid
+        it_should_behave_like 'an authorized request to view a profile' do
+          let(:user_who_owns_profile) { @current_user }
         end
       end
 
       context 'when the user is attempting to view someone else\'s page' do
         before { @target_user = FactoryGirl.create(:user) }
 
-        context 'when the other user\'s profile is set to public' do
+        describe 'when the other user\'s profile is set to public' do
           before do
             @target_user.profile.update_attribute(:is_public, true)
 
             get :show, params: { user_id: @target_user.id }
           end
 
-          it 'responds with success and renders their profile page' do
-            expect(response).to be_success
-            expect(response).to render_template 'show'
-            expect(assigns(:profile)).to eq(@target_user.profile)
+          it_should_behave_like 'an authorized request to view a profile' do
+            let(:user_who_owns_profile) { @target_user }
           end
         end
 
         context 'when the other user\'s profile is NOT set to public' do
           before do
             @target_user.profile.update_attribute(:is_public, false)
-
-            get :show, params: { user_id: @target_user.id }
           end
 
-          it 'responds with a 403 error' do
-            expect(response).to have_http_status 403
+          context 'when the current user is an administrator' do
+            before do
+              sign_out
+              sign_in_as_administrator
+
+              get :show, params: { user_id: @target_user.id }
+            end
+
+            it_should_behave_like 'an authorized request to view a profile' do
+              let(:user_who_owns_profile) { @target_user }
+            end
           end
 
-          it 'renders a 403 page' do
-            expect(response).to render_template 'errors/403'
+          context 'when the current user is not an administrator' do
+            before { get :show, params: { user_id: @target_user.id } }
+
+            it 'responds with a 403 error' do
+              expect(response).to have_http_status 403
+            end
+
+            it 'renders a 403 page' do
+              expect(response).to render_template 'errors/403'
+            end
           end
         end
       end

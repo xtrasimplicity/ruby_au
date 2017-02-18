@@ -29,6 +29,10 @@ describe UsersController do
         expect(assigns(:joining_member)).to be_valid
       end
 
+      it 'should set the user to be a standard user (not admin)' do
+        expect(assigns(:joining_member).user.is_admin?).to be false
+      end
+
       it 'signs the user in' do
        expect(request.env[:clearance].signed_in?).to be true
       end

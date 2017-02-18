@@ -3,11 +3,8 @@ class ProfilesController < ApplicationController
   before_action :load_profile, only: [:show]
 
  def show
-   unless @profile_owner == current_user
-     unless @profile.is_public
-       render 'errors/403', status: 403
-     end
-   end
+  return render 'errors/403', status: 403 unless is_current_user_authorized_to_view_profile?
+
  end
 
  private
@@ -15,5 +12,9 @@ class ProfilesController < ApplicationController
  def load_profile
    @profile_owner = User.find(params[:user_id])
    @profile = @profile_owner.profile
+ end
+
+ def is_current_user_authorized_to_view_profile?
+   @profile_owner == current_user || @profile.is_public || current_user.is_admin?
  end
 end
