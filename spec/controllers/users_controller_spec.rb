@@ -1,4 +1,5 @@
 require 'rails_helper'
+require 'support/shared_examples/users_controller'
 
 describe UsersController do
   render_views
@@ -50,5 +51,72 @@ describe UsersController do
       end
     end
 
+  end
+
+  describe 'on GET to /users/edit' do
+    setup { FactoryGirl.create(:user) }
+
+    context 'when the user is signed in' do
+      before do
+        @current_user = sign_in
+      end
+
+      context 'when the target user is the same as the logged in user' do
+        before do
+          get :edit, params: { user_id: @current_user.id }
+        end
+
+        it_should_behave_like 'an authorized request to edit a user' do
+          let(:target_user) { @current_user }
+        end
+      end
+
+      context 'when the target user is different to the logged in user' do
+        before(:all) do
+          @other_user = FactoryGirl.create(:user)
+        end
+
+        context 'and the current user is an admin' do
+          before do
+            sign_out
+            sign_in_as_administrator
+
+            get :edit, params: { user_id: @other_user.id }
+          end
+
+          it_should_behave_like 'an authorized request to edit a user' do
+            let(:target_user) { @other_user }
+          end
+        end
+
+        context 'and the current user is not an admin' do
+          before do
+            get :edit, params: { user_id: @other_user.id }
+          end
+
+          it 'respond with a 403 error' do
+            expect(response).to have_http_status 403
+          end
+
+          it 'renders a 403 page' do
+            expect(response).to render_template 'errors/403'
+          end
+        end
+      end
+    end
+
+    context 'when a user is not signed in' do
+      before do
+        # Ensure a user exists
+        FactoryGirl.create(:user)
+        sign_out
+
+        get :edit, params: { user_id: User.last.id }
+      end
+
+      it 'redirects the user to the sign_in path' do
+        expect(response).to redirect_to sign_in_path
+      end
+    end
   end
 end

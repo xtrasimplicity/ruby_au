@@ -4,7 +4,7 @@ Rails.application.routes.draw do
 
   resources :profiles, param: :user_id
 
-  resources :users, only: [:create] do
+  resources :users, only: [:create, :edit], param: :user_id do
     resource :password,
       controller: "clearance/passwords",
       only: [:create, :edit, :update]
