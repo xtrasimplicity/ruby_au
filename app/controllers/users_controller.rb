@@ -1,6 +1,6 @@
 class UsersController < Clearance::UsersController
-  before_action :require_login, only: :edit
-  before_action :load_user, only: :edit
+  before_action :require_login, only: [:edit, :update]
+  before_action :load_user, only: [:edit, :update]
 
   def new
     @joining_member = JoiningMember.new(user: User.new)
@@ -22,6 +22,13 @@ class UsersController < Clearance::UsersController
 
   def edit
     return raise_http_error 403 unless can_edit_user?
+    
+  end
+
+  def update
+    return raise_http_error 403 unless can_edit_user?
+
+    @joining_member.update(form_params)
   end
 
   private
@@ -31,10 +38,10 @@ class UsersController < Clearance::UsersController
   end
 
   def load_user
-    @user = User.find(params[:user_id])
+    @joining_member = User.find(params[:user_id])
   end
 
   def can_edit_user?
-    @user == current_user || current_user.is_admin?
+    @joining_member == current_user || current_user.is_admin?
   end
 end

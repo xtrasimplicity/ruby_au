@@ -4,7 +4,7 @@ class ApplicationController < ActionController::Base
   # For APIs, you may want to use :null_session instead.
   protect_from_forgery with: :exception
 
-  protected 
+  private 
 
   def raise_http_error(error_code)
     template_file = File.join(Rails.root, 'public', error_code.to_s)

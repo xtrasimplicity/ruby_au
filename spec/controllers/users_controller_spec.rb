@@ -113,4 +113,54 @@ describe UsersController do
       end
     end
   end
+
+  describe 'on POST to /users/update' do
+    context 'when a user is signed in' do
+      before { @current_user = sign_in}
+
+      context 'and updating another user' do
+        before { @target_user = FactoryGirl.create(:user) }
+
+        context 'as a standard user' do
+          before do
+            post :update, params: { user_id: @target_user.id, joining_member: { email: 'new-email@newdomain.tld' } }
+          end
+
+          it_should_behave_like 'an unauthorized request to update a user' do
+            let(:target_user) { @target_user }
+          end
+        end
+
+        context 'as an admin' do
+          before do
+            sign_out
+            sign_in_as_administrator
+
+            post :update, params: { user_id: @target_user.id, joining_member: { email: Faker::Internet.email } }
+          end
+
+          it_should_behave_like 'an authorized request to update a user' do
+            let(:target_user) { @target_user }
+          end
+        end
+      end
+
+      context 'when updating your own user' do
+        before do
+          @target_user = sign_in
+
+          post :update, params: { user_id: @target_user.id, joining_member: { email: Faker::Internet.email } }
+        end
+        
+        it_should_behave_like 'an authorized request to update a user' do
+          let(:target_user) { @target_user }
+        end
+
+      end
+    end
+
+    context 'when a user is not signed in' do
+
+    end
+  end
 end
