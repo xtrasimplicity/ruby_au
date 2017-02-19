@@ -53,13 +53,7 @@ describe ProfilesController do
           context 'when the current user is not an administrator' do
             before { get :show, params: { user_id: @target_user.id } }
 
-            it 'responds with a 403 error' do
-              expect(response).to have_http_status 403
-            end
-
-            it 'renders a 403 page' do
-              expect(response).to render_template 'errors/403'
-            end
+            it_should_behave_like 'a HTTP error was thrown', 403
           end
         end
       end

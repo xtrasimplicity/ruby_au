@@ -94,13 +94,7 @@ describe UsersController do
             get :edit, params: { user_id: @other_user.id }
           end
 
-          it 'respond with a 403 error' do
-            expect(response).to have_http_status 403
-          end
-
-          it 'renders a 403 page' do
-            expect(response).to render_template 'errors/403'
-          end
+          it_should_behave_like 'a HTTP error was thrown', 403
         end
       end
     end

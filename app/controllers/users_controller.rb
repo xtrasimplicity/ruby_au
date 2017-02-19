@@ -21,7 +21,7 @@ class UsersController < Clearance::UsersController
   end
 
   def edit
-    return render 'errors/403', status: 403 unless can_edit_user?
+    return raise_http_error 403 unless can_edit_user?
   end
 
   private

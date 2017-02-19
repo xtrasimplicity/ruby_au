@@ -12,8 +12,7 @@ class ProfilesController < ApplicationController
  end
 
  def show
-  return render 'errors/403', status: 403 unless is_current_user_authorized_to_view_profile?
-
+   return raise_http_error 403 unless is_current_user_authorized_to_view_profile?
  end
 
  private
